@@ -9,6 +9,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -72,6 +76,8 @@ public class EventRace  implements Serializable {
 		this.id_event = id_event;
 	}
 
+	@NotNull(message = "Falta el name")
+	@NotEmpty(message = "Name no pot estar en blanc")
 	public String getName() {
 		return name;
 	}

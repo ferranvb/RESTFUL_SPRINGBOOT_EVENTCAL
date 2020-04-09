@@ -1,19 +1,31 @@
 package cat.emprul.restfulspringboot.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import cat.emprul.restfulspringboot.entity.EventRace;
@@ -25,10 +37,18 @@ public class EventRaceController {
 	@Autowired
 	EventRepository eventRepositoory;
 	
+	@Autowired
+	MessageSource messageSource;
+	
 	@RequestMapping("/")
 	public String index() {
 		return "OK - Service Working";
 	}
+	
+	@GetMapping("/req")
+    public String resInternational(Locale locale) {
+        return messageSource.getMessage("error.notfound", null, locale);
+    }
 	
 	@GetMapping("/events")
     public List<EventRace> findAll(){
@@ -41,9 +61,16 @@ public class EventRaceController {
     }
 
 	 @PostMapping("/event")
-	 public EventRace createFood(@RequestBody EventRace eventRace) {
+	 public EventRace createEventRace(@Valid @RequestBody EventRace eventRace) {
+		 return eventRepositoory.save(eventRace);
+	 }
+	 
+	 @PutMapping("/event")
+	 public EventRace updateEventRace(@RequestBody EventRace eventRace) {
 	        return eventRepositoory.save(eventRace);
 	 }
+	 
+	 
 	
 	 @DeleteMapping(value = "/delete/{id}")
 	 public ResponseEntity<Long> deletePost(@PathVariable Long id) {
@@ -54,5 +81,18 @@ public class EventRaceController {
 		 }
 	     return new ResponseEntity<>(id, HttpStatus.OK);
 	    }
+	 
+	 @ResponseStatus(HttpStatus.BAD_REQUEST)
+	 @ExceptionHandler(MethodArgumentNotValidException.class)
+	 public Map<String, String> handleValidationExceptions(
+	   MethodArgumentNotValidException ex) {
+	     Map<String, String> errors = new HashMap<>();
+	     ex.getBindingResult().getAllErrors().forEach((error) -> {
+	         String fieldName = ((FieldError) error).getField();
+	         String errorMessage = error.getDefaultMessage();
+	         errors.put(fieldName, errorMessage);
+	     });
+	     return errors;
+	 }
 	
 }
