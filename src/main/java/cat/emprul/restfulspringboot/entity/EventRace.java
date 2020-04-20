@@ -1,13 +1,18 @@
 package cat.emprul.restfulspringboot.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -16,18 +21,32 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * This is a simple class to model table EVENTS 
+ * About annotations JSON, there is a great info:
+ *  https://www.baeldung.com/jackson-annotations
+ *  
+ * 	@JsonInclude: We can use @JsonInclude to exclude properties with empty/null/default values.
+ *  @JsonIgnoreProperties
+ *  @JsonManagedReference: The @JsonManagedReference and @JsonBackReference annotations can handle parent/child relationships and work around loops.
  * @author ferran
  *
  */
 
 @Entity
 @Table(name = "events")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EventRace  implements Serializable {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="id_event")
 	private Long id_event; 
 	
 	@Column(name="nom")
@@ -45,6 +64,20 @@ public class EventRace  implements Serializable {
 	@Column(name="data_inici")
 	private Date dateStart;
 	
+	@OneToMany(
+			mappedBy = "eventRace",
+			cascade = CascadeType.ALL, 
+			orphanRemoval = true)
+    private List<Race> llistaRaces = new ArrayList<Race>();
+	
+	public List<Race> getLlistaRaces() {
+		return llistaRaces;
+	}
+
+	public void setLlistaRaces(List<Race> llistaRaces) {
+		this.llistaRaces = llistaRaces;
+	}
+
 	@Column(name="data_fi")
 	private Date dateEnd;
 	

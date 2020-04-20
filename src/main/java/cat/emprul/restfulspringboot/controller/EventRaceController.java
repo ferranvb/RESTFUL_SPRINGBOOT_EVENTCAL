@@ -5,13 +5,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -24,18 +28,29 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import cat.emprul.restfulspringboot.dto.EventRaceDTO;
 import cat.emprul.restfulspringboot.entity.EventRace;
 import cat.emprul.restfulspringboot.repository.EventRepository;
+import cat.emprul.restfulspringboot.repository.RaceRepository;
+
+import java.lang.reflect.Type;
 
 @RestController
 public class EventRaceController {
 
 	@Autowired
 	EventRepository eventRepositoory;
+	
+	@Autowired
+	RaceRepository raceRepository;
+	
+	@Autowired
+    private ModelMapper modelMapper;
 	
 	@Autowired
 	MessageSource messageSource;
@@ -50,10 +65,21 @@ public class EventRaceController {
         return messageSource.getMessage("error.notfound", null, locale);
     }
 	
+
 	@GetMapping("/events")
-    public List<EventRace> findAll(){
-        return eventRepositoory.findAll();
+	public List<EventRaceDTO> findAll(){
+		List<EventRace> listEventRace = eventRepositoory.findAll();
+        
+		return listEventRace.stream().map(this::convertToDto).collect(Collectors.toList());
     }
+	
+	private EventRaceDTO convertToDto(EventRace eventRace) {
+		Type listType = new TypeToken<List<EventRaceDTO>>(){}.getType();
+		EventRaceDTO eventRaceDTO = modelMapper.map(eventRace, EventRaceDTO.class);
+	    return eventRaceDTO;
+	}
+	
+	
 	
 	@GetMapping("/event/{id}")
     public Optional<EventRace> findById(@PathVariable Long id){

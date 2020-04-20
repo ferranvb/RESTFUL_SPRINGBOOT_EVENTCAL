@@ -2,6 +2,7 @@ package cat.emprul.restfulspringboot;
 
 import java.util.Locale;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,11 @@ public class RestfulSpringBootApplication {
 		SpringApplication.run(RestfulSpringBootApplication.class, args);
 	}
 	
+	
+	@Bean
+	public ModelMapper modelMapper() {
+	    return new ModelMapper();
+	}
 	/**
 	 * In order for our application to be able to determine which locale is currently being used, we need to add a LocaleResolver bean:
 	 * @return
